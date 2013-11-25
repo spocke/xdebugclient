@@ -20,7 +20,7 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -35,6 +35,7 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -83,6 +84,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DiffPlex\Differ.cs" />
+    <Compile Include="DiffPlex\IDiffer.cs" />
+    <Compile Include="DiffPlex\Log.cs" />
+    <Compile Include="DiffPlex\Model\DiffBlock.cs" />
+    <Compile Include="DiffPlex\Model\DiffResult.cs" />
+    <Compile Include="DiffPlex\Model\EditLengthResult.cs" />
+    <Compile Include="DiffPlex\Model\ModificationData.cs" />
     <Compile Include="Forms\AboutForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -263,6 +271,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DiffPlex\License.txt" />
     <Content Include="lgpl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

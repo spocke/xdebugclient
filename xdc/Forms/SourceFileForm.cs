@@ -25,6 +25,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
+using System.IO;
 using System.Windows.Forms;
 
 using WeifenLuo.WinFormsUI;
@@ -32,6 +33,7 @@ using WeifenLuo.WinFormsUI.Docking;
 using ICSharpCode.TextEditor;
 using ICSharpCode.TextEditor.Document;
 using xdc.XDebug;
+using xdc.DiffPlex;
 
 namespace xdc.Forms
 {
@@ -68,6 +70,61 @@ namespace xdc.Forms
         {           
             this.textEditor.LoadFile(filename);
         }
+
+		public void Reload()
+		{
+			var document = this.textEditor.Document;
+			var marks = document.BookmarkManager.Marks;
+
+			var bookmarkLines = new int[marks.Count];
+			for (var i = 0; i < marks.Count; i++)
+			{
+				bookmarkLines[i] = marks[i].LineNumber;
+			}
+
+			var oldText = document.TextContent;
+
+			Encoding encoding = this.textEditor.Encoding;
+			document.TextContent = ICSharpCode.TextEditor.Util.FileReader.ReadFileContent(getFilename(), ref encoding, Encoding.UTF8);
+			this.textEditor.Encoding = encoding;
+
+			var diffResult = new Differ().CreateLineDiffs(oldText, document.TextContent, true);
+
+			var idx = 0;
+			foreach (var mark in marks.ToArray())
+			{
+				var line = bookmarkLines[idx++];
+
+				foreach (var diffBlock in diffResult.DiffBlocks)
+				{
+					if (diffBlock.DeleteCountA > 0)
+					{
+						// Bookmark line deleted or altered
+						if (line >= diffBlock.DeleteStartA && line < diffBlock.DeleteStartA + diffBlock.DeleteCountA)
+						{
+							marks.Remove(mark);
+							break;
+						}
+
+						// Delete before
+						if (diffBlock.DeleteStartA < line)
+						{
+							line -= diffBlock.DeleteCountA;
+						}
+					}
+
+					// Insert before
+					if (diffBlock.InsertCountB > 0 && diffBlock.InsertStartB <= line)
+					{
+						line += diffBlock.InsertCountB;
+					}
+				}
+
+				mark.LineNumber = line;
+			}
+
+			this.textEditor.Refresh();
+		}
 
         public string getFilename()
         {

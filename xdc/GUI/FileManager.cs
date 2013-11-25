@@ -169,7 +169,7 @@ namespace xdc.GUI
                 var lastWriteTime = new FileInfo(file.localFilename).LastWriteTime;
                 if (file.lastModified != lastWriteTime)
                 {
-                    file.form.LoadFile(file.localFilename);
+					file.form.Reload();
                     file.lastModified = lastWriteTime;
                 }
             }
