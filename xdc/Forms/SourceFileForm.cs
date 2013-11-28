@@ -34,6 +34,7 @@ using ICSharpCode.TextEditor;
 using ICSharpCode.TextEditor.Document;
 using xdc.XDebug;
 using xdc.DiffPlex;
+using ICSharpCode.TextEditor.Util;
 
 namespace xdc.Forms
 {
@@ -84,9 +85,17 @@ namespace xdc.Forms
 
 			var oldText = document.TextContent;
 
-			Encoding encoding = this.textEditor.Encoding;
-			document.TextContent = ICSharpCode.TextEditor.Util.FileReader.ReadFileContent(getFilename(), ref encoding, Encoding.UTF8);
-			this.textEditor.Encoding = encoding;
+			try
+			{
+				Encoding encoding = this.textEditor.Encoding;
+				document.TextContent = FileReader.ReadFileContent(getFilename(), ref encoding, Encoding.UTF8);
+				this.textEditor.Encoding = encoding;
+			}
+			catch
+			{
+				// Might throw file used by another process, ignore that
+				return;
+			}
 
 			var diffResult = new Differ().CreateLineDiffs(oldText, document.TextContent, true);
 
