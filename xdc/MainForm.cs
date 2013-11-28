@@ -103,11 +103,6 @@ namespace xdc
         {
             if (started)
             {
-                /*if (_fileLoader != null && _fileLoader.AllowsOpenFileDialog)
-                {
-                    openToolStripMenuItem.Enabled = true;
-                }*/
-
                 runToolStripMenuItem.Enabled = true;
                 stepInToolStripMenuItem.Enabled = true;
                 stepOutToolStripMenuItem.Enabled = true;
@@ -125,8 +120,6 @@ namespace xdc
 
                 startListeningToolStripMenuItem.Enabled = true;
                 stopDebuggingToolStripMenuItem.Enabled = false;
-                //openToolStripMenuItem.Enabled = false;
-                //closeToolStripMenuItem.Enabled = false;
             }
 
         }
@@ -301,6 +294,7 @@ namespace xdc
             f.Show(this.dockPanel, DockState.Document);
                        
             closeToolStripMenuItem.Enabled = true;
+			closeAllToolStripMenuItem.Enabled = true;
 
             // We have to collect all the bookmarks added and removed. This way
             // XdebugClient is able to restore bookmarks whenever a script is rerun.
@@ -546,7 +540,7 @@ namespace xdc
             _fileMgr.Remove(localFilename);
 
             closeToolStripMenuItem.Enabled = _fileMgr.HasOpenFiles;
-            
+			closeAllToolStripMenuItem.Enabled = _fileMgr.HasOpenFiles;
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -556,7 +550,10 @@ namespace xdc
 
             if (r == DialogResult.OK)
             {
-                this.LoadFile(openFileDialog1.FileName);
+	            foreach (var fileName in openFileDialog1.FileNames)
+	            {
+					this.LoadFile(fileName);
+	            }
             }
         }
 
@@ -654,22 +651,7 @@ namespace xdc
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            IDockContent content = this.dockPanel.ActiveDocument;
-
-            if (content is xdc.Forms.SourceFileForm)
-            {
-                xdc.Forms.SourceFileForm form = (content as xdc.Forms.SourceFileForm);
-                string localFilename = _fileMgr.GetLocalFilename(form.getFilename());
-
-                if (localFilename != "")
-                    _fileMgr.Remove(localFilename);
-            }
-            
-            if (!_fileMgr.HasOpenFiles)
-            {
-                closeToolStripMenuItem.Enabled = false;
-            }
-            content.DockHandler.Close();
+			this.closeDockPanelContent(this.dockPanel.ActiveDocument);
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -742,5 +724,31 @@ namespace xdc
             xdc.Forms.ConfigForm cf = new xdc.Forms.ConfigForm();
             cf.ShowDialog();
         }
+
+		private void closeAllStripMenuItem_Click(object sender, EventArgs e) {
+			for (var i = this.dockPanel.Contents.Count - 1; i >= 0; i--) {
+				this.closeDockPanelContent(this.dockPanel.Contents[i]);
+			}
+		}
+
+		private void closeDockPanelContent(IDockContent content)
+		{
+			if (content is xdc.Forms.SourceFileForm)
+			{
+				xdc.Forms.SourceFileForm form = (content as xdc.Forms.SourceFileForm);
+				string localFilename = _fileMgr.GetLocalFilename(form.getFilename());
+
+				if (localFilename != "")
+				{
+					_fileMgr.Remove(localFilename);
+				}
+
+				if (!_fileMgr.HasOpenFiles) {
+					closeToolStripMenuItem.Enabled = false;
+				}
+
+				content.DockHandler.Close();
+			}
+		}
     }
 }
